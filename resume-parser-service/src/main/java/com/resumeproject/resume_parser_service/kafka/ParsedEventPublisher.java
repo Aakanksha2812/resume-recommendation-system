@@ -3,7 +3,9 @@ package com.resumeproject.resume_parser_service.kafka;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.stereotype.Service;
 
+@Service
 public class ParsedEventPublisher {
     private static final Logger log = LoggerFactory.getLogger(ParsedEventPublisher.class);
     private final KafkaTemplate<String, String> kafkaTemplate;

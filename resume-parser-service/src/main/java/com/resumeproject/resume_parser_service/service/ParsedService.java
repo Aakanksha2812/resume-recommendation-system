@@ -5,10 +5,12 @@ import com.resumeproject.resume_parser_service.model.ParsedResume;
 import com.resumeproject.resume_parser_service.repository.ParsedResumeRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Service
 public class ParsedService {
 
     private static final Logger log = LoggerFactory.getLogger(ParsedService.class);
