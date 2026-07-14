@@ -28,8 +28,12 @@ services:
       - "27017:27017"
 
   chromadb:
-    image: chromadb/chroma:0.6.3
+    image: chromadb/chroma:latest
+    container_name: chromadb
     ports:
       - "8000:8000"
-    environment:
-      CHROMA_LOG_LEVEL: DEBUG
+    volumes:
+      - chromadb_data:/chroma/chroma
+
+volumes:
+  chromadb_data:
