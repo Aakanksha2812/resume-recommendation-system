@@ -29,7 +29,7 @@ public class ResumeEventConsumer {
         String cleanId = resumeId.replace("\"", "").trim();
         log.info("Received event from topic resume-uploaded, resumeId: {}", cleanId);
 
-        // ObjectId se query karo
+
         Query query = new Query(Criteria.where("_id").is(new ObjectId(cleanId)));
         Document resume = mongoTemplate.findOne(query, Document.class, "resumes");
 

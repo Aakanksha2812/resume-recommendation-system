@@ -9,12 +9,14 @@ import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+
 public class RecommendationService {
 
     private static final Logger log = LoggerFactory.getLogger(RecommendationService.class);
@@ -34,6 +36,7 @@ public class RecommendationService {
         this.recommendationEventPublisher = recommendationEventPublisher;
     }
 
+    @Async
     public void generateRecommendation(String parsedResumeId,
                                        String candidateName,
                                        String candidateEmail,
