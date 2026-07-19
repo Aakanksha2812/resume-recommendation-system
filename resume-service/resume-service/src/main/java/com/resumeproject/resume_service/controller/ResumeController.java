@@ -14,6 +14,7 @@ import java.io.IOException;
 
 @RestController
 @RequestMapping("/resume")
+@CrossOrigin(origins = "http://localhost:3000")
 public class ResumeController {
 
     private static final Logger log = LoggerFactory.getLogger(ResumeController.class);
@@ -27,22 +28,30 @@ public class ResumeController {
     public ResponseEntity<Resume> uploadResume(
             @RequestParam String candidateName,
             @RequestParam String candidateEmail,
-            @RequestParam String fileName,
             @RequestParam MultipartFile file) {
+
         log.info("Received resume upload request for: {}", candidateEmail);
+
+
         String fileContent = "";
         try {
-            log.info("extracting details from pdf");
             PDDocument document = PDDocument.load(file.getInputStream());
             PDFTextStripper stripper = new PDFTextStripper();
             fileContent = stripper.getText(document);
             document.close();
-            log.info("pdf text added file content {}", fileContent.length());
-        } catch (IOException io) {
-            log.error("error while extracting text from pdf  {}", io.getMessage());
+            log.info("Extracted text from PDF: {} characters", fileContent.length());
+        } catch (IOException e) {
+            log.error("Error extracting text from PDF: {}", e.getMessage());
             return ResponseEntity.badRequest().build();
         }
-        Resume resume = resumeService.uploadResume(candidateName, candidateEmail, fileName, fileContent);
+
+        Resume resume = resumeService.uploadResume(
+                candidateName,
+                candidateEmail,
+                file.getOriginalFilename(),
+                fileContent
+        );
+
         return ResponseEntity.ok(resume);
     }
 }
