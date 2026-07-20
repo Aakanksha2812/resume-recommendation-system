@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.io.IOException;
 
 @RestController
@@ -35,11 +34,11 @@ public class ResumeController {
 
         String fileContent = "";
         try {
-            PDDocument document = PDDocument.load(file.getInputStream());
+            PDDocument document = PDDocument.load(file.getBytes());
             PDFTextStripper stripper = new PDFTextStripper();
             fileContent = stripper.getText(document);
             document.close();
-            log.info("Extracted text from PDF: {} characters", fileContent.length());
+            log.info("Extracted text from PDF: {} characters", fileContent);
         } catch (IOException e) {
             log.error("Error extracting text from PDF: {}", e.getMessage());
             return ResponseEntity.badRequest().build();

@@ -185,3 +185,22 @@ button:hover:not(:disabled) {
   margin-top: 24px;
   background: #48bb78;
 }
+.file-upload {
+  margin-bottom: 4px;
+}
+
+.file-label {
+  display: block;
+  padding: 12px;
+  border: 2px dashed #667eea;
+  border-radius: 8px;
+  text-align: center;
+  cursor: pointer;
+  color: #667eea;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.file-label:hover {
+  background: #f0f4ff;
+}

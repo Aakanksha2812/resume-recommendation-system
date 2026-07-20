@@ -5,38 +5,56 @@ function App() {
   const [formData, setFormData] = useState({
     candidateName: '',
     candidateEmail: '',
-    fileName: '',
-    fileContent: ''
   });
+  const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [recommendations, setRecommendations] = useState(null);
   const [error, setError] = useState(null);
   const [submitted, setSubmitted] = useState(false);
+  const [step, setStep] = useState('');
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const handleFileChange = (e) => {
+    const selectedFile = e.target.files[0];
+    if (selectedFile && selectedFile.type === 'application/pdf') {
+      setFile(selectedFile);
+    } else {
+      alert('Please select a PDF file');
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!file) {
+      alert('Please select a PDF file');
+      return;
+    }
+
     setLoading(true);
     setError(null);
     setRecommendations(null);
+    setStep('Uploading resume...');
 
     try {
-      // Resume upload karo
-      const params = new URLSearchParams(formData);
-      const uploadRes = await fetch(
-        `http://localhost:8081/resume/upload?${params}`,
-        { method: 'POST' }
-      );
+      const formPayload = new FormData();
+      formPayload.append('candidateName', formData.candidateName);
+      formPayload.append('candidateEmail', formData.candidateEmail);
+      formPayload.append('file', file);
+
+      const uploadRes = await fetch('http://localhost:8081/resume/upload', {
+        method: 'POST',
+        body: formPayload
+      });
 
       if (!uploadRes.ok) throw new Error('Resume upload failed');
 
+      setStep('Parsing skills from resume...');
       setSubmitted(true);
       setLoading(false);
 
-      // Poll karo recommendations ke liye — Ollama time lagata hai
       pollRecommendations(formData.candidateEmail);
 
     } catch (err) {
@@ -48,31 +66,39 @@ function App() {
   const pollRecommendations = (email) => {
     setLoading(true);
     let attempts = 0;
-    const maxAttempts = 20;
+    const maxAttempts = 24;
+    const steps = [
+      'Parsing skills from resume...',
+      'Searching matching jobs...',
+      'AI is analyzing your profile...',
+      'Generating explanation...',
+      'Almost done...'
+    ];
 
     const interval = setInterval(async () => {
       attempts++;
+      setStep(steps[Math.min(Math.floor(attempts / 5), steps.length - 1)]);
+
       try {
-        const res = await fetch(
-          `http://localhost:8083/recommendations/${email}`
-        );
+        const res = await fetch(`http://localhost:8083/recommendations/${email}`);
         const data = await res.json();
 
         if (data && data.length > 0) {
-          setRecommendations(data[data.length - 1]); // latest recommendation
+          setRecommendations(data[data.length - 1]);
           setLoading(false);
+          setStep('');
           clearInterval(interval);
         }
 
         if (attempts >= maxAttempts) {
           setLoading(false);
-          setError('Recommendation is taking too long. Please check back later.');
+          setError('Taking too long. Please check back later.');
           clearInterval(interval);
         }
       } catch (err) {
         console.error('Polling error:', err);
       }
-    }, 5000); // har 5 seconds mein check karo
+    }, 5000);
   };
 
   return (
@@ -112,31 +138,23 @@ function App() {
               </div>
 
               <div className="form-group">
-                <label>File Name</label>
-                <input
-                  type="text"
-                  name="fileName"
-                  placeholder="my_resume.pdf"
-                  value={formData.fileName}
-                  onChange={handleChange}
-                  required
-                />
+                <label>Resume (PDF only)</label>
+                <div className="file-upload">
+                  <input
+                    type="file"
+                    accept=".pdf"
+                    onChange={handleFileChange}
+                    id="file-input"
+                    style={{ display: 'none' }}
+                  />
+                  <label htmlFor="file-input" className="file-label">
+                    {file ? `✅ ${file.name}` : '📄 Choose PDF File'}
+                  </label>
+                </div>
+                <small>Upload your resume in PDF format</small>
               </div>
 
-              <div className="form-group">
-                <label>Skills & Experience</label>
-                <textarea
-                  name="fileContent"
-                  placeholder="Java Spring Boot Kafka MongoDB Microservices Docker..."
-                  value={formData.fileContent}
-                  onChange={handleChange}
-                  rows={4}
-                  required
-                />
-                <small>Enter your skills and experience keywords</small>
-              </div>
-
-              <button type="submit" disabled={loading}>
+              <button type="submit" disabled={loading || !file}>
                 {loading ? 'Processing...' : 'Get Job Recommendations'}
               </button>
             </form>
@@ -148,7 +166,7 @@ function App() {
             {loading && (
               <div className="loading">
                 <div className="spinner"></div>
-                <p>AI is analyzing your profile and finding best matches...</p>
+                <p>{step}</p>
                 <small>This may take 1-2 minutes</small>
               </div>
             )}
@@ -178,6 +196,7 @@ function App() {
                       <p>{job}</p>
                     </div>
                   ))}
+                  <p1>{recommendations.explanations}</p1>
                 </div>
 
                 <div className="explanation">
@@ -190,10 +209,11 @@ function App() {
                   onClick={() => {
                     setSubmitted(false);
                     setRecommendations(null);
-                    setFormData({ candidateName: '', candidateEmail: '', fileName: '', fileContent: '' });
+                    setFile(null);
+                    setFormData({ candidateName: '', candidateEmail: '' });
                   }}
                 >
-                  Search Again
+                  Upload Another Resume
                 </button>
               </div>
             )}
