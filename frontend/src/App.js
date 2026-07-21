@@ -190,12 +190,12 @@ function App() {
 
                 <div className="matched-jobs">
                   <h3>🏢 Top Job Matches</h3>
-                  {recommendations.matchedJobs.map((job, index) => (
-                    <div key={index} className="job-card">
-                      <span className="job-rank">#{index + 1}</span>
-                      <p>{job}</p>
-                    </div>
-                  ))}
+                {recommendations.matchedJobs && recommendations.matchedJobs.map((job, index) => (
+                  <div key={index} className="job-card">
+                    <span className="job-rank">#{index + 1}</span>
+                    <p>{job}</p>
+                  </div>
+                ))}
                   <p1>{recommendations.explanations}</p1>
                 </div>
 
